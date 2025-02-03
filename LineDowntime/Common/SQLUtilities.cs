@@ -159,9 +159,9 @@ namespace LineDowntime.Common
                 }
                 return data;
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception(ex.Message);
+                throw;
             }
         }
 
@@ -191,9 +191,9 @@ namespace LineDowntime.Common
                 }
                 return obj;
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception(ex.Message + "\n" + columnName);
+                throw;
             }
         }
 
@@ -217,9 +217,9 @@ namespace LineDowntime.Common
                 }
                 cmd.ExecuteNonQuery();
             }
-            catch (SqlException ex)
+            catch
             {
-                throw new Exception(ex.Message);
+                throw;
             }
             finally
             {
@@ -245,9 +245,9 @@ namespace LineDowntime.Common
                 cmd.ExecuteNonQuery();
                 cn.Close();
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception(ex.Message);
+                throw;
             }
             finally
             {
@@ -279,9 +279,9 @@ namespace LineDowntime.Common
                         return mySqlCommand.ExecuteScalar();
                     }
                 }
-                catch (SqlException e)
+                catch
                 {
-                    throw new Exception(e.ToString());
+                    throw;
                 }
             }
         }

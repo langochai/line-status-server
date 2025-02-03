@@ -33,9 +33,9 @@ namespace LineDowntime.Common
                 SqlDataReader reader = mySqlCommand.ExecuteReader();
                 model = reader.MapToSingle<T>();
             }
-            catch (SqlException e)
+            catch
             {
-                throw new Exception(e.ToString());
+                throw;
             }
             finally
             {
@@ -67,9 +67,9 @@ namespace LineDowntime.Common
                 SqlDataReader reader = mySqlCommand.ExecuteReader();
                 lst = reader.MapToList<T>();
             }
-            catch (SqlException e)
+            catch
             {
-                throw new Exception(e.ToString());
+                throw;
             }
             finally
             {
@@ -91,9 +91,9 @@ namespace LineDowntime.Common
                 SqlDataReader reader = mySqlCommand.ExecuteReader();
                 model = reader.MapToSingle<T>();
             }
-            catch (SqlException e)
+            catch
             {
-                throw new Exception(e.ToString());
+                throw;
             }
             finally
             {
@@ -115,9 +115,9 @@ namespace LineDowntime.Common
                 SqlDataReader reader = mySqlCommand.ExecuteReader();
                 lst = reader.MapToList<T>();
             }
-            catch (SqlException e)
+            catch
             {
-                throw new Exception(e.ToString());
+                throw;
             }
             finally
             {
