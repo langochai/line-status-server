@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace LineDowntime.Properties {
+namespace LineStatusServer.Properties {
     using System;
     
     

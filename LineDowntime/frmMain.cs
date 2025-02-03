@@ -1,6 +1,6 @@
-﻿using LineDowntime.Common;
-using LineDowntime.DTOs;
-using LineDowntime.Models;
+﻿using LineStatusServer.Common;
+using LineStatusServer.DTOs;
+using LineStatusServer.Models;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
@@ -9,7 +9,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace LineDowntime
+namespace LineStatusServer
 {
     public partial class frmMain : Form
     {

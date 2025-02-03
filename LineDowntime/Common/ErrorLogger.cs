@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     public class ErrorLogger
     {

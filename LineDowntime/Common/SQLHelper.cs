@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     public static class SQLHelper<T> where T : class, new()
     {

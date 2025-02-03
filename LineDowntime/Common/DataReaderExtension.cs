@@ -6,7 +6,7 @@ using System.Reflection;
 
 //using SqlDataReaderMapper;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     public static class DataReaderExtension
     {

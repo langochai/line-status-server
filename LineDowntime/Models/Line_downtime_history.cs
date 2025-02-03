@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LineDowntime.Models
+namespace LineStatusServer.Models
 {
     public class Line_downtime_history
     {

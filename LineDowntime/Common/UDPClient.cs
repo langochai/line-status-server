@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     public class UDPClient
     {

@@ -5,7 +5,7 @@ using System.Data;
 using System.Globalization;
 using System.Reflection;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     public static class SQLUtilities
     {

@@ -1,11 +1,11 @@
-﻿using LineDowntime.Common;
+﻿using LineStatusServer.Common;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace LineDowntime
+namespace LineStatusServer
 {
     internal static class Program
     {

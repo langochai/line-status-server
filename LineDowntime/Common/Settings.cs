@@ -1,5 +1,5 @@
-﻿using LineDowntime.DTOs;
-using LineDowntime.Properties;
+﻿using LineStatusServer.DTOs;
+using LineStatusServer.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -7,7 +7,7 @@ using System.IO;
 using System.Net;
 using System.Runtime;
 
-namespace LineDowntime.Common
+namespace LineStatusServer.Common
 {
     internal class Settings
     {

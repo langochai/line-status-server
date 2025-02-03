@@ -1,4 +1,4 @@
-﻿namespace LineDowntime.DTOs
+﻿namespace LineStatusServer.DTOs
 {
     public class UDPAddress
     {
