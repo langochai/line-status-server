@@ -1,10 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace LineDowntime.Common
 {
@@ -160,25 +159,45 @@ namespace LineDowntime.Common
             return Insert;
         }
 
-        public static string SQLUpdate(T model)
+        public static string SQLUpdate(T model, string[] whereColumns = null, string[] updateColumns = null)
         {
             Type type = model.GetType();
             string tableName = type.Name.Contains("Model") ? type.Name : type.Name.Replace("Model", "");
             string Update = "UPDATE " + tableName + " SET ";
             PropertyInfo[] pis = type.GetProperties();
-
-            for (int i = 0; i < pis.Length; i++)
+            if (updateColumns == null)
             {
-                if (!pis[i].Name.Equals("ID"))
+
+                for (int i = 0; i < pis.Length; i++)
                 {
-                    Update = Update + pis[i].Name;
-                    Update = Update + "=@" + pis[i].Name;
-                    Update = Update + ",";
+                    if (!pis[i].Name.Equals("ID"))
+                    {
+                        Update = Update + pis[i].Name;
+                        Update = Update + "=@" + pis[i].Name;
+                        Update = Update + ",";
+                    }
+                }
+            }
+            else
+            {
+                foreach (var column in updateColumns)
+                {
+                    Update += $" {column} = @{column} ";
                 }
             }
             Update = Update.Substring(0, Update.Length - 1);
-            Update = Update + " WHERE ID=" + type.GetProperty("ID").GetValue(model, null).ToString();
-
+            if (type.GetProperty("ID") != null)
+                Update = Update + " WHERE ID=" + type.GetProperty("ID").GetValue(model, null).ToString();
+            else
+            {
+                if (whereColumns == null || whereColumns.Length == 0) throw new ArgumentException("Keys were not found.");
+                Update += " WHERE ";
+                foreach (var column in whereColumns)
+                {
+                    Update += $" {column} = @{column}Where AND ";
+                }
+                Update = Update.Substring(0, Update.Length - 5);
+            }
             return Update;
         }
 
@@ -190,7 +209,7 @@ namespace LineDowntime.Common
             {
                 string sql = SQLInsert(model);
                 SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandTimeout = 2000;
+                cmd.CommandTimeout = 60;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
@@ -254,56 +273,76 @@ namespace LineDowntime.Common
             }
         }
 
-        public static void Update(T model, string userName = "")
+        public static void Update(T model, string[] whereColumns = null, string[] updateColumns = null, string userName = "")
         {
             Type type = model.GetType();
             SqlConnection conn = new SqlConnection(connectionString);
             try
             {
-                string sql = SQLUpdate(model);
+                string sql = SQLUpdate(model, whereColumns, updateColumns);
                 SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandTimeout = 2000;
+                cmd.CommandTimeout = 60;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
                 PropertyInfo[] propertiesName = type.GetProperties();
-                for (int i = 0; i < propertiesName.Length; i++)
+                if (updateColumns == null)
                 {
-                    SqlDbType dbType = ConvertToSQLType(propertiesName[i].PropertyType);
-                    object value = propertiesName[i].GetValue(model, null);
+                    for (int i = 0; i < propertiesName.Length; i++)
+                    {
+                        SqlDbType dbType = ConvertToSQLType(propertiesName[i].PropertyType);
+                        object value = propertiesName[i].GetValue(model, null);
 
-                    if (propertiesName[i].Name.ToLower().Equals("updatedby"))
-                    {
-                        cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.NVarChar).Value = userName;
-                    }
-                    else if (propertiesName[i].Name.ToLower().Equals("updateddate"))
-                    {
-                        cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.DateTime).Value = DateTime.Now;
-                    }
-                    else if (value != null)
-                    {
-                        if (propertiesName[i].PropertyType.Equals(typeof(DateTime)))
+                        if (propertiesName[i].Name.ToLower().Equals("updatedby"))
                         {
-                            if ((DateTime)value == DateTime.MinValue)
-                                value = new DateTime(1900, 01, 01);
+                            cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.NVarChar).Value = userName;
                         }
-                        if (propertiesName[i].PropertyType.Name.Equals("Byte[]"))
+                        else if (propertiesName[i].Name.ToLower().Equals("updateddate"))
                         {
-                            cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.Image).Value = value;
+                            cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.DateTime).Value = DateTime.Now;
                         }
-                        else
+                        else if (value != null)
                         {
-                            cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = value;
-                        }
-                    }
-                    else
-                    {
-                        if (propertiesName[i].PropertyType.Equals(typeof(DateTime?)))
-                        {
-                            cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = DBNull.Value;
+                            if (propertiesName[i].PropertyType.Equals(typeof(DateTime)))
+                            {
+                                if ((DateTime)value == DateTime.MinValue)
+                                    value = new DateTime(1900, 01, 01);
+                            }
+                            if (propertiesName[i].PropertyType.Name.Equals("Byte[]"))
+                            {
+                                cmd.Parameters.Add("@" + propertiesName[i].Name, SqlDbType.Image).Value = value;
+                            }
+                            else
+                            {
+                                cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = value;
+                            }
                         }
                         else
-                            cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = "";
+                        {
+                            if (propertiesName[i].PropertyType.Equals(typeof(DateTime?)))
+                            {
+                                cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = DBNull.Value;
+                            }
+                            else
+                                cmd.Parameters.Add("@" + propertiesName[i].Name, dbType).Value = "";
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var col in updateColumns)
+                    {
+                        PropertyInfo prop = type.GetProperty(col) ?? throw new ArgumentException($"Property '{col}' not found on type '{type}'.");
+                        cmd.Parameters.Add("@" + col, ConvertToSQLType(prop.PropertyType)).Value = prop.GetValue(model);
+                    }
+                }
+
+                if (whereColumns != null)
+                {
+                    foreach (var col in whereColumns)
+                    {
+                        PropertyInfo prop = type.GetProperty(col) ?? throw new ArgumentException($"Property '{col}' not found on type '{type}'.");
+                        cmd.Parameters.Add($"@{col}WHERE", ConvertToSQLType(prop.PropertyType)).Value = prop.GetValue(model);
                     }
                 }
                 conn.Open();
@@ -319,6 +358,44 @@ namespace LineDowntime.Common
                 if (conn.State != ConnectionState.Closed) conn.Close();
                 conn.Dispose();
             }
+        }
+
+        public static bool DoesExist(T model, string[] columns)
+        {
+            string tableName = typeof(T).Name;
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = SQLExist(tableName, columns);
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    foreach (var column in columns)
+                    {
+                        var property = typeof(T).GetProperty(column);
+                        if (property != null)
+                        {
+                            command.Parameters.Add($"@{column}", ConvertToSQLType(property.PropertyType)).Value = property.GetValue(model) ?? DBNull.Value;
+                        }
+                    }
+
+                    object result = command.ExecuteScalar();
+                    return result != null && (int)result > 0;
+                }
+            }
+        }
+
+        private static string SQLExist(string tableName, string[] columns)
+        {
+            var conditions = new List<string>();
+            foreach (var column in columns)
+            {
+                conditions.Add($"{column} = @{column}");
+            }
+            string whereClause = string.Join(" AND ", conditions);
+
+            return $"SELECT COUNT(*) FROM {tableName} WHERE {whereClause}";
         }
 
         public static SqlDbType ConvertToSQLType(Type type)

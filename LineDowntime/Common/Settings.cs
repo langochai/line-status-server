@@ -1,9 +1,11 @@
 ﻿using LineDowntime.DTOs;
+using LineDowntime.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime;
 
 namespace LineDowntime.Common
 {
@@ -69,6 +71,7 @@ namespace LineDowntime.Common
             jsonObj["Password"] = Password;
             jsonObj["Extra"] = Extra;
             File.WriteAllText(settingsFilePath, jsonObj.ToString());
+            connectionString = $"Server={ServerName};Database={DBName};User Id={UserName};Password={Password};{Extra}";
         }
 
         public static void WriteUDPAddress(string IP, string Port)
@@ -79,6 +82,7 @@ namespace LineDowntime.Common
             jsonObj["IPAddress"] = IP;
             jsonObj["Port"] = Port;
             File.WriteAllText(settingsFilePath, jsonObj.ToString());
+            UDPAddress = new IPEndPoint(IPAddress.Parse(IP), Convert.ToInt32(Port));
         }
     }
 }

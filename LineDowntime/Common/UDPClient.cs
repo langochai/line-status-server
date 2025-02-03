@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LineDowntime.Common
 {
-    internal class UDPClient
+    public class UDPClient
     {
         public delegate void Callback(string input);
+
         private static CancellationTokenSource cts = new CancellationTokenSource();
+
         public static async void ReadData(Callback callback)
         {
             try
@@ -22,11 +22,12 @@ namespace LineDowntime.Common
 
                 IPEndPoint localEndPoint = new IPEndPoint(localAddr, listenPort);
 
-                using (UdpClient listener = new UdpClient(localEndPoint))
+                using (UdpClient listener = new UdpClient())
                 {
+                    listener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    listener.Client.Bind(localEndPoint);
                     try
                     {
-
                         while (!cts.Token.IsCancellationRequested)
                         {
                             UdpReceiveResult result = await listener.ReceiveAsync();
@@ -52,14 +53,19 @@ namespace LineDowntime.Common
             }
             finally
             {
-                await Task.Delay(5000);
-                ReadData(callback);
+                if ((!cts.Token.IsCancellationRequested))
+                {
+                    await Task.Delay(5000);
+                    ReadData(callback);
+                }
             }
         }
+
         public static void StopConnection()
         {
             cts.Cancel();
         }
+
         public static void ResetConnection(Callback callback)
         {
             cts.Cancel();

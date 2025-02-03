@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace LineDowntime.Common
 {
@@ -229,9 +228,10 @@ namespace LineDowntime.Common
         }
 
         /// <summary>
-        /// Thực thi một câu lệnh Command
+        /// Execute a SQL command.<br></br> 
+        /// Note: Add parameters if Microsoft.Data.SqlClient version &lt; 3.0, otherwise string interpolation is acceptable.
         /// </summary>
-        /// <param name="strSQL">Chuỗi command</param>
+        /// <param name="strSQL">SQL query to execute.</param>
         public static void ExcuteSQL(string strSQL)
         {
             SqlConnection cn = new SqlConnection(Settings.connectionString);
@@ -285,6 +285,7 @@ namespace LineDowntime.Common
                 }
             }
         }
+
         /// <summary>
         /// Use this shit if the current time of DB is not correctly set
         /// </summary>

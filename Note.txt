@@ -1,0 +1,5 @@
+post build command:
+mkdir "$(TargetDir)refs"
+for %%f in ("$(TargetDir)*.*") do (
+    if /I not "%%~nxf"=="$(TargetName)$(TargetExt)" if /I not "%%~nxf"=="$(TargetName)$(TargetExt).config" if /I not "%%~xf"==".json" move "%%f" "$(TargetDir)refs\"
+)

@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
 
 namespace LineDowntime.Common
 {
@@ -21,5 +21,4 @@ namespace LineDowntime.Common
             File.AppendAllText(logFilePath, logMessage);
         }
     }
-
 }

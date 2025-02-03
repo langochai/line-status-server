@@ -4,11 +4,8 @@ using LineDowntime.Models;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -46,21 +43,51 @@ namespace LineDowntime
         /// <param name="JSONstring">Received data; JSON format</param>
         private void SynchData(string JSONstring)
         {
-            LineData lineData = JsonConvert.DeserializeObject<LineData>(JSONstring);
-            lineData.Timestamp = DateTime.Now;
-            //label1.BeginInvoke((MethodInvoker)(() => label1.Text = lineData.LineCode));
-            var lineDataSQL = new Line_downtime_history
+            try
             {
-                line_code = lineData.LineCode,
-                timestamp = lineData.Timestamp,
-                product_count = lineData.ProductCount,
-                status = lineData.Status,
-            };
-            Invoke(new Action(() =>
+                LineData lineData = JsonConvert.DeserializeObject<LineData>(JSONstring);
+                lineData.Timestamp = DateTime.Now;
+                BeginInvoke(new Action(() =>
+                {
+                    listLineData.Insert(0, lineData);
+                    if (listLineData.Count > 100) listLineData.RemoveAt(listLineData.Count - 1);
+                }));
+                var lineDataSQL = new Line_downtime_history
+                {
+                    line_code = lineData.LineCode,
+                    timestamp = lineData.Timestamp,
+                    product_count = lineData.ProductCount,
+                    status = lineData.Status,
+                };
+                bool doesExist = SQLUtilities.ToBoolean(SQLUtilities.ExecuteScalarQuery(@"
+                    SELECT COUNT(1) 
+                    FROM Line_downtime_history 
+                    WHERE line_code = @line_code and status = @status and datediff(day, timestamp, @timestamp) = 0",
+                        new string[] { "@line_code", "@status", "@timestamp" },
+                        new object[] { lineDataSQL.line_code, lineDataSQL.status, lineDataSQL.timestamp }
+                ));
+                if (doesExist)
+                {
+                    SQLUtilities.ExecuteScalarQuery($@"
+                        UPDATE Line_downtime_history
+                        SET product_count = @product_count
+                        Where line_code = @line_code
+                        AND status = @status
+                        AND DATEDIFF(day, timestamp, '{lineDataSQL.timestamp:yyyy-MM-dd}') = 0",
+                        new string[] { "@product_count", "@line_code", "@status" },
+                        new object[] { lineDataSQL.product_count, lineDataSQL.line_code, lineDataSQL.status }
+                    );
+                }
+                else
+                {
+                    SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
+                }
+            }
+            catch (Exception ex)
             {
-                listLineData.Insert(0, lineData);
-                if (listLineData.Count > 50 ) listLineData.RemoveAt(listLineData.Count - 1);
-            }));
+                MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorLogger.Write(ex);
+            }
         }
 
         #region Minimize to tray
@@ -76,12 +103,12 @@ namespace LineDowntime
             ShowForm();
         }
 
-        private void toolstripShow_Click(object sender, EventArgs e)
+        private void mnitemShow_Click(object sender, EventArgs e)
         {
             ShowForm();
         }
 
-        private void toolstripExit_Click(object sender, EventArgs e)
+        private void mnitemExit_Click(object sender, EventArgs e)
         {
             this.Close();
         }
@@ -188,7 +215,7 @@ namespace LineDowntime
             {
                 if (btnConnect.Tag.ToString().ToLower() == "disconnected")
                 {
-                    Task.Run(() => UDPClient.ReadData(SynchData)).Wait();
+                    Task.Run(() => UDPClient.ResetConnection(SynchData)).Wait();
                     lblCurrentStatus.Text = "Đã kết nối";
                     lblCurrentStatus.ForeColor = Color.Green;
                     btnConnect.Text = "Ngắt kết nối";
@@ -209,7 +236,7 @@ namespace LineDowntime
                     btnConnect.Tag = "disconnected";
                 }
             }
-            catch 
+            catch
             {
                 lblCurrentStatus.Text = "Đã có lỗi xảy ra";
                 lblCurrentStatus.ForeColor = Color.Red;

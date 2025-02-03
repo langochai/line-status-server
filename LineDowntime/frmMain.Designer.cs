@@ -37,6 +37,7 @@
             this.chkRunOnStartUp = new System.Windows.Forms.CheckBox();
             this.btnMinimize = new System.Windows.Forms.Button();
             this.pnlHeader = new System.Windows.Forms.Panel();
+            this.chkConnectWhenStart = new System.Windows.Forms.CheckBox();
             this.lblServerName = new System.Windows.Forms.Label();
             this.txtServerName = new System.Windows.Forms.TextBox();
             this.txtDBName = new System.Windows.Forms.TextBox();
@@ -54,15 +55,14 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblCurrentStatus = new System.Windows.Forms.Label();
             this.grvMain = new System.Windows.Forms.DataGridView();
-            this.btnConnect = new System.Windows.Forms.Button();
-            this.btnSave = new System.Windows.Forms.Button();
             this.colLineCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Timestamp = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colProductCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuGrvMain = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnitemDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.chkConnectWhenStart = new System.Windows.Forms.CheckBox();
+            this.btnConnect = new System.Windows.Forms.Button();
+            this.btnSave = new System.Windows.Forms.Button();
             this.menuNotify.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.grvMain)).BeginInit();
@@ -89,14 +89,14 @@
             this.mnitemShow.Name = "mnitemShow";
             this.mnitemShow.Size = new System.Drawing.Size(116, 22);
             this.mnitemShow.Text = "Hiển thị";
-            this.mnitemShow.Click += new System.EventHandler(this.toolstripShow_Click);
+            this.mnitemShow.Click += new System.EventHandler(this.mnitemShow_Click);
             // 
             // mnitemExit
             // 
             this.mnitemExit.Name = "mnitemExit";
             this.mnitemExit.Size = new System.Drawing.Size(116, 22);
             this.mnitemExit.Text = "Thoát";
-            this.mnitemExit.Click += new System.EventHandler(this.toolstripExit_Click);
+            this.mnitemExit.Click += new System.EventHandler(this.mnitemExit_Click);
             // 
             // chkRunOnStartUp
             // 
@@ -132,6 +132,18 @@
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(809, 29);
             this.pnlHeader.TabIndex = 6;
+            // 
+            // chkConnectWhenStart
+            // 
+            this.chkConnectWhenStart.AutoSize = true;
+            this.chkConnectWhenStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkConnectWhenStart.Location = new System.Drawing.Point(189, 3);
+            this.chkConnectWhenStart.Name = "chkConnectWhenStart";
+            this.chkConnectWhenStart.Size = new System.Drawing.Size(138, 24);
+            this.chkConnectWhenStart.TabIndex = 6;
+            this.chkConnectWhenStart.Text = "Kết nối khi chạy";
+            this.chkConnectWhenStart.UseVisualStyleBackColor = true;
+            this.chkConnectWhenStart.CheckedChanged += new System.EventHandler(this.chkConnectWhenStart_CheckedChanged);
             // 
             // lblServerName
             // 
@@ -282,6 +294,8 @@
             // 
             // grvMain
             // 
+            this.grvMain.AllowUserToAddRows = false;
+            this.grvMain.AllowUserToDeleteRows = false;
             this.grvMain.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
             this.grvMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.grvMain.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -295,40 +309,6 @@
             this.grvMain.Name = "grvMain";
             this.grvMain.Size = new System.Drawing.Size(809, 250);
             this.grvMain.TabIndex = 25;
-            // 
-            // btnConnect
-            // 
-            this.btnConnect.BackColor = System.Drawing.SystemColors.Window;
-            this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnConnect.ForeColor = System.Drawing.Color.Green;
-            this.btnConnect.Image = global::LineDowntime.Properties.Resources.antenna;
-            this.btnConnect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnConnect.Location = new System.Drawing.Point(602, 109);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Padding = new System.Windows.Forms.Padding(40, 0, 40, 0);
-            this.btnConnect.Size = new System.Drawing.Size(165, 40);
-            this.btnConnect.TabIndex = 22;
-            this.btnConnect.Tag = "disconnected";
-            this.btnConnect.Text = "Kết nối";
-            this.btnConnect.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnConnect.UseVisualStyleBackColor = false;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-            // 
-            // btnSave
-            // 
-            this.btnSave.BackColor = System.Drawing.SystemColors.Window;
-            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSave.Image = ((System.Drawing.Image)(resources.GetObject("btnSave.Image")));
-            this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSave.Location = new System.Drawing.Point(429, 109);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Padding = new System.Windows.Forms.Padding(50, 0, 50, 0);
-            this.btnSave.Size = new System.Drawing.Size(165, 40);
-            this.btnSave.TabIndex = 21;
-            this.btnSave.Text = "Lưu";
-            this.btnSave.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnSave.UseVisualStyleBackColor = false;
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // colLineCode
             // 
@@ -373,17 +353,39 @@
             this.mnitemDelete.Text = "Xóa";
             this.mnitemDelete.Click += new System.EventHandler(this.mnitemDelete_Click);
             // 
-            // chkConnectWhenStart
+            // btnConnect
             // 
-            this.chkConnectWhenStart.AutoSize = true;
-            this.chkConnectWhenStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkConnectWhenStart.Location = new System.Drawing.Point(189, 3);
-            this.chkConnectWhenStart.Name = "chkConnectWhenStart";
-            this.chkConnectWhenStart.Size = new System.Drawing.Size(138, 24);
-            this.chkConnectWhenStart.TabIndex = 6;
-            this.chkConnectWhenStart.Text = "Kết nối khi chạy";
-            this.chkConnectWhenStart.UseVisualStyleBackColor = true;
-            this.chkConnectWhenStart.CheckedChanged += new System.EventHandler(this.chkConnectWhenStart_CheckedChanged);
+            this.btnConnect.BackColor = System.Drawing.SystemColors.Window;
+            this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnConnect.ForeColor = System.Drawing.Color.Green;
+            this.btnConnect.Image = global::LineDowntime.Properties.Resources.antenna;
+            this.btnConnect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnConnect.Location = new System.Drawing.Point(602, 109);
+            this.btnConnect.Name = "btnConnect";
+            this.btnConnect.Padding = new System.Windows.Forms.Padding(40, 0, 40, 0);
+            this.btnConnect.Size = new System.Drawing.Size(165, 40);
+            this.btnConnect.TabIndex = 22;
+            this.btnConnect.Tag = "disconnected";
+            this.btnConnect.Text = "Kết nối";
+            this.btnConnect.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnConnect.UseVisualStyleBackColor = false;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.BackColor = System.Drawing.SystemColors.Window;
+            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSave.Image = ((System.Drawing.Image)(resources.GetObject("btnSave.Image")));
+            this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnSave.Location = new System.Drawing.Point(429, 109);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Padding = new System.Windows.Forms.Padding(50, 0, 50, 0);
+            this.btnSave.Size = new System.Drawing.Size(165, 40);
+            this.btnSave.TabIndex = 21;
+            this.btnSave.Text = "Lưu";
+            this.btnSave.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // frmMain
             // 
