@@ -219,7 +219,7 @@ namespace LineStatusServer
                     lblCurrentStatus.Text = "Đã kết nối";
                     lblCurrentStatus.ForeColor = Color.Green;
                     btnConnect.Text = "Ngắt kết nối";
-                    btnConnect.Image = Properties.Resources.cellular_network;
+                    btnConnect.Image = Properties.Resources.disconnect;
                     btnConnect.Padding = new Padding(25, 0, 25, 0);
                     btnConnect.ForeColor = Color.Red;
                     btnConnect.Tag = "connected";
@@ -230,7 +230,7 @@ namespace LineStatusServer
                     lblCurrentStatus.Text = "Đã ngắt kết nối";
                     lblCurrentStatus.ForeColor = Color.Red;
                     btnConnect.Text = "Kết nối";
-                    btnConnect.Image = Properties.Resources.antenna;
+                    btnConnect.Image = Properties.Resources.connect;
                     btnConnect.Padding = new Padding(40, 0, 40, 0);
                     btnConnect.ForeColor = Color.Green;
                     btnConnect.Tag = "disconnected";

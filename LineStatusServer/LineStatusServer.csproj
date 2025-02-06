@@ -8,8 +8,8 @@
     <ProjectGuid>{312F7813-EFB9-401B-AF22-E1ACF6239DC5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LineDowntime</RootNamespace>
-    <AssemblyName>LineDowntime</AssemblyName>
+    <RootNamespace>LineStatusServer</RootNamespace>
+    <AssemblyName>LineStatusServer</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -217,7 +217,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\licenses.licx" />
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -249,11 +249,16 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Save.bmp" />
     <None Include="Resources\no-connection.png" />
     <None Include="Resources\floppy-disk.png" />
     <None Include="Resources\antenna.png" />
     <None Include="Resources\cellular-network.png" />
+    <None Include="Resources\antenna1.png" />
+    <None Include="Resources\cellular-network1.png" />
+    <None Include="Resources\floppy-disk1.png" />
+    <None Include="Resources\save.png" />
+    <None Include="Resources\connect.png" />
+    <None Include="Resources\disconnect.png" />
     <Content Include="wrench.ico" />
     <Content Include="wrench.png" />
   </ItemGroup>

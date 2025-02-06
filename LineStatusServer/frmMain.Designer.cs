@@ -358,7 +358,7 @@
             this.btnConnect.BackColor = System.Drawing.SystemColors.Window;
             this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnConnect.ForeColor = System.Drawing.Color.Green;
-            this.btnConnect.Image = global::LineStatusServer.Properties.Resources.antenna;
+            this.btnConnect.Image = global::LineStatusServer.Properties.Resources.connect;
             this.btnConnect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnConnect.Location = new System.Drawing.Point(602, 109);
             this.btnConnect.Name = "btnConnect";
@@ -375,7 +375,7 @@
             // 
             this.btnSave.BackColor = System.Drawing.SystemColors.Window;
             this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSave.Image = ((System.Drawing.Image)(resources.GetObject("btnSave.Image")));
+            this.btnSave.Image = global::LineStatusServer.Properties.Resources.save;
             this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnSave.Location = new System.Drawing.Point(429, 109);
             this.btnSave.Name = "btnSave";
