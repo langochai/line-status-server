@@ -14,6 +14,7 @@ namespace LineStatusServer
     public partial class frmMain : Form
     {
         public BindingList<LineData> listLineData = new BindingList<LineData>();
+        public string lastLineData = string.Empty;
 
         public frmMain()
         {
@@ -45,8 +46,13 @@ namespace LineStatusServer
         {
             try
             {
+                if (lastLineData == JSONstring)
+                    return;
+                lastLineData = JSONstring;
+
                 LineData lineData = JsonConvert.DeserializeObject<LineData>(JSONstring);
                 lineData.Timestamp = SQLUtilities.GetDate();
+
                 BeginInvoke(new Action(() =>
                 {
                     listLineData.Insert(0, lineData);
