@@ -46,7 +46,7 @@ namespace LineStatusServer
             try
             {
                 LineData lineData = JsonConvert.DeserializeObject<LineData>(JSONstring);
-                lineData.Timestamp = DateTime.Now;
+                lineData.Timestamp = SQLUtilities.GetDate();
                 BeginInvoke(new Action(() =>
                 {
                     listLineData.Insert(0, lineData);
@@ -59,29 +59,7 @@ namespace LineStatusServer
                     product_count = lineData.ProductCount,
                     status = lineData.Status,
                 };
-                bool doesExist = SQLUtilities.ToBoolean(SQLUtilities.ExecuteScalarQuery(@"
-                    SELECT COUNT(1) 
-                    FROM Line_downtime_history 
-                    WHERE line_code = @line_code and status = @status and datediff(day, timestamp, @timestamp) = 0",
-                        new string[] { "@line_code", "@status", "@timestamp" },
-                        new object[] { lineDataSQL.line_code, lineDataSQL.status, lineDataSQL.timestamp }
-                ));
-                if (doesExist)
-                {
-                    SQLUtilities.ExecuteScalarQuery($@"
-                        UPDATE Line_downtime_history
-                        SET product_count = @product_count
-                        Where line_code = @line_code
-                        AND status = @status
-                        AND DATEDIFF(day, timestamp, '{lineDataSQL.timestamp:yyyy-MM-dd}') = 0",
-                        new string[] { "@product_count", "@line_code", "@status" },
-                        new object[] { lineDataSQL.product_count, lineDataSQL.line_code, lineDataSQL.status }
-                    );
-                }
-                else
-                {
-                    SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
-                }
+                SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
             }
             catch (Exception ex)
             {
@@ -139,7 +117,7 @@ namespace LineStatusServer
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", false);
                 if (key != null)
                 {
-                    object value = key.GetValue("DownTime");
+                    object value = key.GetValue("LineStatusServer");
                     chkRunOnStartUp.Checked = value != null;
                 }
             }
@@ -153,7 +131,7 @@ namespace LineStatusServer
         {
             try
             {
-                string appName = "DownTime";
+                string appName = "LineStatusServer";
                 string appPath = Application.ExecutablePath;
 
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
@@ -169,7 +147,7 @@ namespace LineStatusServer
         {
             try
             {
-                string appName = "DownTime";
+                string appName = "LineStatusServer";
 
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
                 key.DeleteValue(appName, false);

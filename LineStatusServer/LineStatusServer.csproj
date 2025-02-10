@@ -249,13 +249,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\no-connection.png" />
-    <None Include="Resources\floppy-disk.png" />
-    <None Include="Resources\antenna.png" />
-    <None Include="Resources\cellular-network.png" />
-    <None Include="Resources\antenna1.png" />
-    <None Include="Resources\cellular-network1.png" />
-    <None Include="Resources\floppy-disk1.png" />
     <None Include="Resources\save.png" />
     <None Include="Resources\connect.png" />
     <None Include="Resources\disconnect.png" />

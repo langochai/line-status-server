@@ -9,7 +9,7 @@ namespace LineStatusServer
 {
     internal static class Program
     {
-        private static Mutex mutex = new Mutex(true, "DownTimeMutex"); // single instance app
+        private static Mutex mutex = new Mutex(true, "LineStatusServer"); // single instance app
 
         [STAThread]
         private static void Main()
