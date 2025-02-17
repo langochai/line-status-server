@@ -238,25 +238,27 @@
             // txtIPAddress
             // 
             this.txtIPAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtIPAddress.Location = new System.Drawing.Point(562, 40);
+            this.txtIPAddress.Location = new System.Drawing.Point(562, 171);
             this.txtIPAddress.Name = "txtIPAddress";
             this.txtIPAddress.Size = new System.Drawing.Size(202, 26);
             this.txtIPAddress.TabIndex = 18;
+            this.txtIPAddress.Visible = false;
             // 
             // lblIPAddress
             // 
             this.lblIPAddress.AutoSize = true;
             this.lblIPAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblIPAddress.Location = new System.Drawing.Point(425, 43);
+            this.lblIPAddress.Location = new System.Drawing.Point(425, 174);
             this.lblIPAddress.Name = "lblIPAddress";
             this.lblIPAddress.Size = new System.Drawing.Size(76, 20);
             this.lblIPAddress.TabIndex = 17;
             this.lblIPAddress.Text = "Địa chỉ IP";
+            this.lblIPAddress.Visible = false;
             // 
             // txtPort
             // 
             this.txtPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPort.Location = new System.Drawing.Point(562, 72);
+            this.txtPort.Location = new System.Drawing.Point(562, 40);
             this.txtPort.Name = "txtPort";
             this.txtPort.Size = new System.Drawing.Size(202, 26);
             this.txtPort.TabIndex = 20;
@@ -265,7 +267,7 @@
             // 
             this.lblPort.AutoSize = true;
             this.lblPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPort.Location = new System.Drawing.Point(425, 75);
+            this.lblPort.Location = new System.Drawing.Point(425, 43);
             this.lblPort.Name = "lblPort";
             this.lblPort.Size = new System.Drawing.Size(38, 20);
             this.lblPort.TabIndex = 19;
@@ -275,7 +277,7 @@
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblStatus.Location = new System.Drawing.Point(425, 167);
+            this.lblStatus.Location = new System.Drawing.Point(425, 135);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(99, 24);
             this.lblStatus.TabIndex = 23;
@@ -286,7 +288,7 @@
             this.lblCurrentStatus.AutoSize = true;
             this.lblCurrentStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCurrentStatus.ForeColor = System.Drawing.Color.Red;
-            this.lblCurrentStatus.Location = new System.Drawing.Point(530, 167);
+            this.lblCurrentStatus.Location = new System.Drawing.Point(530, 135);
             this.lblCurrentStatus.Name = "lblCurrentStatus";
             this.lblCurrentStatus.Size = new System.Drawing.Size(134, 24);
             this.lblCurrentStatus.TabIndex = 24;
@@ -360,7 +362,7 @@
             this.btnConnect.ForeColor = System.Drawing.Color.Green;
             this.btnConnect.Image = global::LineStatusServer.Properties.Resources.connect;
             this.btnConnect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnConnect.Location = new System.Drawing.Point(602, 109);
+            this.btnConnect.Location = new System.Drawing.Point(600, 77);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Padding = new System.Windows.Forms.Padding(40, 0, 40, 0);
             this.btnConnect.Size = new System.Drawing.Size(165, 40);
@@ -377,7 +379,7 @@
             this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSave.Image = global::LineStatusServer.Properties.Resources.save;
             this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSave.Location = new System.Drawing.Point(429, 109);
+            this.btnSave.Location = new System.Drawing.Point(426, 77);
             this.btnSave.Name = "btnSave";
             this.btnSave.Padding = new System.Windows.Forms.Padding(50, 0, 50, 0);
             this.btnSave.Size = new System.Drawing.Size(165, 40);

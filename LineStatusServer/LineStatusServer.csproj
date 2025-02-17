@@ -194,12 +194,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\CSocketServer.cs" />
     <Compile Include="Common\DataReaderExtension.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Settings.cs" />
     <Compile Include="Common\SQLHelper.cs" />
     <Compile Include="Common\SQLUtilities.cs" />
-    <Compile Include="Common\UDPClient.cs" />
+    <Compile Include="Common\TCPServer.cs" />
     <Compile Include="DTOs\LineData.cs" />
     <Compile Include="DTOs\UDPAddress.cs" />
     <Compile Include="DTOs\UserSettings.cs" />
