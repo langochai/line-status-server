@@ -2,8 +2,10 @@
 using LineStatusServer.DTOs;
 using LineStatusServer.Models;
 using Microsoft.Win32;
+using NB_TestTruyenThong.Uc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -16,6 +18,15 @@ namespace LineStatusServer
         public BindingList<LineData> listLineData = new BindingList<LineData>();
         public string lastLineData = string.Empty;
 
+        private CSocketServer tcpServer = null;
+        private List<int> LstPrefix = new List<int>();
+        private List<int> LstSuffix = new List<int>();
+        private bool isRun;
+        public bool IsRun
+        {
+            get { return isRun; }
+            set { isRun = value; }
+        }
         public frmMain()
         {
             InitializeComponent();
@@ -195,11 +206,55 @@ namespace LineStatusServer
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            try
+            //try
+            //{
+            //    if (btnConnect.Tag.ToString().ToLower() == "disconnected")
+            //    {
+            //        Task.Run(() => TCPServer.ResetConnection(SynchData)).Wait();
+            //        lblCurrentStatus.Text = "Đã kết nối";
+            //        lblCurrentStatus.ForeColor = Color.Green;
+            //        btnConnect.Text = "Ngắt kết nối";
+            //        btnConnect.Image = Properties.Resources.disconnect;
+            //        btnConnect.Padding = new Padding(25, 0, 25, 0);
+            //        btnConnect.ForeColor = Color.Red;
+            //        btnConnect.Tag = "connected";
+            //    }
+            //    else
+            //    {
+            //        Task.Run(() => TCPServer.StopConnection()).Wait();
+            //        lblCurrentStatus.Text = "Đã ngắt kết nối";
+            //        lblCurrentStatus.ForeColor = Color.Red;
+            //        btnConnect.Text = "Kết nối";
+            //        btnConnect.Image = Properties.Resources.connect;
+            //        btnConnect.Padding = new Padding(40, 0, 40, 0);
+            //        btnConnect.ForeColor = Color.Green;
+            //        btnConnect.Tag = "disconnected";
+            //    }
+            //}
+            //catch
+            //{
+            //    lblCurrentStatus.Text = "Đã có lỗi xảy ra";
+            //    lblCurrentStatus.ForeColor = Color.Red;
+            //}
+
+            if (!IsRun)
             {
-                if (btnConnect.Tag.ToString().ToLower() == "disconnected")
+                if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
+                tcpServer = new CSocketServer(Settings.UDPAddress.Port);
+                tcpServer.Start();
+                if (!tcpServer.IsConnected)
                 {
-                    Task.Run(() => UDPClient.ResetConnection(SynchData)).Wait();
+                    lblCurrentStatus.Text = "Đã ngắt kết nối";
+                    lblCurrentStatus.ForeColor = Color.Red;
+                    btnConnect.Text = "Kết nối";
+                    btnConnect.Image = Properties.Resources.connect;
+                    btnConnect.Padding = new Padding(40, 0, 40, 0);
+                    btnConnect.ForeColor = Color.Green;
+                    btnConnect.Tag = "disconnected";
+                    return;
+                }
+                else
+                {
                     lblCurrentStatus.Text = "Đã kết nối";
                     lblCurrentStatus.ForeColor = Color.Green;
                     btnConnect.Text = "Ngắt kết nối";
@@ -208,22 +263,53 @@ namespace LineStatusServer
                     btnConnect.ForeColor = Color.Red;
                     btnConnect.Tag = "connected";
                 }
-                else
-                {
-                    Task.Run(() => UDPClient.StopConnection()).Wait();
-                    lblCurrentStatus.Text = "Đã ngắt kết nối";
-                    lblCurrentStatus.ForeColor = Color.Red;
-                    btnConnect.Text = "Kết nối";
-                    btnConnect.Image = Properties.Resources.connect;
-                    btnConnect.Padding = new Padding(40, 0, 40, 0);
-                    btnConnect.ForeColor = Color.Green;
-                    btnConnect.Tag = "disconnected";
-                }
+                // hàm lấy dữ liệu
+                tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
+                tcpServer.OnReceiveDataEvents_Server += GetDataFromServer;
             }
-            catch
+            else
             {
-                lblCurrentStatus.Text = "Đã có lỗi xảy ra";
+                lblCurrentStatus.Text = "Đã ngắt kết nối";
                 lblCurrentStatus.ForeColor = Color.Red;
+                btnConnect.Text = "Kết nối";
+                btnConnect.Image = Properties.Resources.connect;
+                btnConnect.Padding = new Padding(40, 0, 40, 0);
+                btnConnect.ForeColor = Color.Green;
+                btnConnect.Tag = "disconnected";
+                tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
+                if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
+            }
+        }
+
+        private void GetDataFromServer(string receive_Data)
+        {
+            try
+            {
+                if (lastLineData == receive_Data)
+                    return;
+                lastLineData = receive_Data;
+
+                LineData lineData = JsonConvert.DeserializeObject<LineData>(receive_Data);
+                lineData.Timestamp = SQLUtilities.GetDate();
+
+                BeginInvoke(new Action(() =>
+                {
+                    listLineData.Insert(0, lineData);
+                    if (listLineData.Count > 100) listLineData.RemoveAt(listLineData.Count - 1);
+                }));
+                var lineDataSQL = new Line_downtime_history
+                {
+                    line_code = lineData.LineCode,
+                    timestamp = lineData.Timestamp,
+                    product_count = lineData.ProductCount,
+                    status = lineData.Status,
+                };
+                SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorLogger.Write(ex);
             }
         }
 
@@ -247,5 +333,6 @@ namespace LineStatusServer
             Properties.Settings.Default.ConnectWhenStart = chkConnectWhenStart.Checked;
             Properties.Settings.Default.Save();
         }
+
     }
 }
