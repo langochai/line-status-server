@@ -12,7 +12,7 @@ namespace LineStatusServer.Common
     internal class Settings
     {
         public static string connectionString = "";
-        public static IPEndPoint UDPAddress = null;
+        public static IPEndPoint TCPAddress = null;
 
         public static (string, string, string, string, string) ReadSQLConnectionString()
         {
@@ -37,16 +37,16 @@ namespace LineStatusServer.Common
             }
         }
 
-        public static (string, string) ReadUDPAddress()
+        public static (string, string) ReadTCPAddress()
         {
-            string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UDP.json");
+            string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TCP.json");
             if (File.Exists(settingsFilePath))
             {
                 string jsonString = File.ReadAllText(settingsFilePath);
-                var settings = JsonConvert.DeserializeObject<UDPAddress>(jsonString);
+                var settings = JsonConvert.DeserializeObject<TCP_Address>(jsonString);
                 if (settings != null)
                 {
-                    UDPAddress = new IPEndPoint(IPAddress.Parse(settings.IPAddress), settings.Port);
+                    TCPAddress = new IPEndPoint(IPAddress.Parse(settings.IPAddress), settings.Port);
                     return (settings.IPAddress, Convert.ToString(settings.Port));
                 }
                 else
@@ -56,7 +56,7 @@ namespace LineStatusServer.Common
             }
             else
             {
-                throw new FileNotFoundException("UDP setting is not found");
+                throw new FileNotFoundException("TCP setting is not found");
             }
         }
 
@@ -74,15 +74,15 @@ namespace LineStatusServer.Common
             connectionString = $"Server={ServerName};Database={DBName};User Id={UserName};Password={Password};{Extra}";
         }
 
-        public static void WriteUDPAddress(string IP, string Port)
+        public static void WriteTCPAddress(string IP, string Port)
         {
-            string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UDP.json");
+            string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TCP.json");
             string json = File.ReadAllText(settingsFilePath);
             JObject jsonObj = JObject.Parse(json);
             jsonObj["IPAddress"] = IP;
             jsonObj["Port"] = Port;
             File.WriteAllText(settingsFilePath, jsonObj.ToString());
-            UDPAddress = new IPEndPoint(IPAddress.Parse(IP), Convert.ToInt32(Port));
+            TCPAddress = new IPEndPoint(IPAddress.Parse(IP), Convert.ToInt32(Port));
         }
     }
 }

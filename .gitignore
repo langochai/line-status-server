@@ -8,7 +8,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-UDP.json
+TCP.json
 settings.json
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

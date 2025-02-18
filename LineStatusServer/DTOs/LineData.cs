@@ -8,5 +8,6 @@ namespace LineStatusServer.DTOs
         public int Status { get; set; }
         public DateTime Timestamp { get; set; }
         public int ProductCount { get; set; }
+        public int shift { get; set; }
     }
 }

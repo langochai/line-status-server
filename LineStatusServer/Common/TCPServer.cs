@@ -1,17 +1,18 @@
-﻿using System;
+﻿using LineStatusServer.Common;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace LineStatusServer.Common
+namespace NB_TestTruyenThong.Uc
 {
+    public delegate void ReceiveDataEvents_Server(string data);
+    
     public class TCPServer
     {
-        public delegate void Callback(string input);
-
         #region VARIABLES
         private Socket _serverSocket;
         private List<Socket> _clientSockets;
@@ -34,88 +35,33 @@ namespace LineStatusServer.Common
         /// </summary>
         public bool IsConnected { get; set; } = false;
 
-        public Callback Callback_Server;
+        public ReceiveDataEvents_Server OnReceiveDataEvents_Server;
         #endregion
 
-        private static CancellationTokenSource cts = new CancellationTokenSource();
-
-        public static async void ReadData(Callback callback)
+        #region FUNCTIONS
+        /// <summary>
+        /// Khởi tạo đối tượng
+        /// </summary>
+        public TCPServer()
         {
-            try
-            {
-                //IPAddress localAddr = Settings.UDPAddress.Address;
-                //int listenPort = Settings.UDPAddress.Port;
-
-                //IPEndPoint localEndPoint = new IPEndPoint(localAddr, listenPort);
-
-                //using (UdpClient listener = new UdpClient())
-                //{
-                //    listener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                //    listener.Client.Bind(localEndPoint);
-                //    try
-                //    {
-                //        while (!cts.Token.IsCancellationRequested)
-                //        {
-                //            UdpReceiveResult result = await listener.ReceiveAsync();
-                //            byte[] bytes = result.Buffer;
-                //            string receivedData = Encoding.UTF8.GetString(bytes);
-                //            callback(receivedData);
-                //        }
-                //    }
-                //    catch
-                //    {
-                //        throw; // Do NOT throw new exception, it will destroy stack trace. Stupid ass C#
-                //    }
-                //    finally
-                //    {
-                //        listener.Close();
-                //    }
-                //}
-                //IPAddress localAddr = IPAddress.Any;
-                //int listenPort = Settings.UDPAddress.Port;
-                //ProtocolType protocolType = ProtocolType.Tcp;
-                //Socket _serverSocket = new Socket(AddressFamily.InterNetwork, (protocolType == ProtocolType.Tcp ? SocketType.Stream : SocketType.Dgram), protocolType);
-
-                //IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, listenPort);
-                //_serverSocket.Bind(localEndPoint);
-                //_serverSocket.Listen(100);
-                //_serverSocket.BeginAccept(AcceptCallback, null);
-
-
-            }
-            catch (Exception ex)
-            {
-                ErrorLogger.Write(ex);
-                throw; // uncomment this or add messagebox if needed
-            }
-            finally
-            {
-                if ((!cts.Token.IsCancellationRequested))
-                {
-                    await Task.Delay(5000);
-                    ReadData(callback);
-                }
-            }
+            _buffer = new byte[BUFFER_SIZE];
+            _clientSockets = new List<Socket>();
         }
 
-        private void AcceptCallback(IAsyncResult ar)
+        /// <summary>
+        /// Khởi tạo đối tượng
+        /// </summary>
+        /// <param name="portNumber">Địa chỉ Cổng kết nối</param>
+        /// <param name="protocolType">Kiểu kết nối</param>
+        /// <param name="isHex">Dữ liệu có phải kiểu Hexa hay ko?</param>
+        public TCPServer(int portNumber, ProtocolType protocolType = ProtocolType.Tcp, bool isHex = false)
         {
-            Socket socket;
-            if (_serverSocket == null) return;
-            try
-            {
-                socket = _serverSocket.EndAccept(ar);
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-
-            _clientSockets.Add(socket);
-            socket.BeginReceive(_buffer, 0, BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
-            _serverSocket.BeginAccept(AcceptCallback, null);
+            Port = portNumber;
+            IsHex = isHex;
+            ProtocolType = protocolType;
+            _buffer = new byte[BUFFER_SIZE];
+            _clientSockets = new List<Socket>();
         }
-
         bool IsSocketConnected(Socket s)
         {
             try
@@ -127,7 +73,19 @@ namespace LineStatusServer.Common
                 return false;
             }
         }
-
+        /// <summary>
+        /// Gửi dữ liệu cho toàn bộ client
+        /// </summary>
+        /// <param name="data">Dữ liệu gửi</param>
+        public void SendAll(byte[] data)
+        {
+            try
+            {
+                foreach (Socket socket in _clientSockets)
+                    socket.Send(data);
+            }
+            catch { }
+        }
         /// <summary>
         /// Hàm nhận dữ liệu từ client
         /// </summary>
@@ -160,8 +118,8 @@ namespace LineStatusServer.Common
             text = IsHex ? BitConverter.ToString(recBuf).Replace("-", "") : Encoding.ASCII.GetString(recBuf);
 
             if (!string.IsNullOrEmpty(text))
-                if (Callback_Server != null)
-                    Callback_Server(text);
+                if (OnReceiveDataEvents_Server != null)
+                    OnReceiveDataEvents_Server(text);
 
             try
             {
@@ -174,17 +132,81 @@ namespace LineStatusServer.Common
                 return;
             }
         }
-
-        public static void StopConnection()
+        private void AcceptCallback(IAsyncResult ar)
         {
-            cts.Cancel();
+            Socket socket;
+            if (_serverSocket == null) return;
+            try
+            {
+                socket = _serverSocket.EndAccept(ar);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
+            _clientSockets.Add(socket);
+            socket.BeginReceive(_buffer, 0, BUFFER_SIZE, SocketFlags.None, ReceiveCallback, socket);
+            _serverSocket.BeginAccept(AcceptCallback, null);
+        }
+        /// <summary>
+        /// Đóng lại toàn bộ kết nối với client
+        /// </summary>
+        private void CloseAllSockets()
+        {
+            try
+            {
+                foreach (Socket socket in _clientSockets)
+                {
+                    socket.Shutdown(SocketShutdown.Both);
+                    socket.Close();
+                }
+                _clientSockets.Clear();
+                _serverSocket.Close();
+            }
+            catch
+            {
+            }
         }
 
-        public static void ResetConnection(Callback callback)
+        #region PUBLIC FUNCTIONS        
+        /// <summary>
+        /// Khởi chạy server
+        /// </summary>
+        ///<returns>
+        ///<para>True: Thành công</para>
+        ///<para>False: Thất bại</para>
+        ///</returns>
+        public bool Start()
         {
-            cts.Cancel();
-            cts = new CancellationTokenSource();
-            ReadData(callback);
+            try
+            {
+                if (_serverSocket == null) _serverSocket = new Socket(AddressFamily.InterNetwork,
+                    (ProtocolType == ProtocolType.Tcp ? SocketType.Stream : SocketType.Dgram), ProtocolType);
+
+                _serverSocket.Bind(Settings.TCPAddress);
+                _serverSocket.Listen(100);
+                _serverSocket.BeginAccept(AcceptCallback, null);
+                IsConnected = true;
+                return true;
+            }
+            catch
+            {
+                IsConnected = false;
+                return false;
+            }
         }
+        /// <summary>
+        /// Đóng server
+        /// </summary>
+        public void Stop()
+        {
+            CloseAllSockets();
+            _serverSocket = null;
+            IsConnected = false;
+        }
+        #endregion
+
+        #endregion
     }
 }

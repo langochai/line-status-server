@@ -194,15 +194,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\CSocketServer.cs" />
+    <Compile Include="Common\TCPServer.cs" />
     <Compile Include="Common\DataReaderExtension.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Settings.cs" />
     <Compile Include="Common\SQLHelper.cs" />
     <Compile Include="Common\SQLUtilities.cs" />
-    <Compile Include="Common\TCPServer.cs" />
     <Compile Include="DTOs\LineData.cs" />
-    <Compile Include="DTOs\UDPAddress.cs" />
+    <Compile Include="DTOs\TCP_Address.cs" />
     <Compile Include="DTOs\UserSettings.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
@@ -238,12 +237,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="UDP.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TCP.json" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

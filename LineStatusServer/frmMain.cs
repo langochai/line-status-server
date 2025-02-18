@@ -18,7 +18,7 @@ namespace LineStatusServer
         public BindingList<LineData> listLineData = new BindingList<LineData>();
         public string lastLineData = string.Empty;
 
-        private CSocketServer tcpServer = null;
+        private TCPServer tcpServer = null;
         private List<int> LstPrefix = new List<int>();
         private List<int> LstSuffix = new List<int>();
         private bool isRun;
@@ -36,7 +36,7 @@ namespace LineStatusServer
         {
             InitializeCheckStartUp();
             var (serverName, dbName, userName, password, extra) = Settings.ReadSQLConnectionString();
-            var (ip, port) = Settings.ReadUDPAddress();
+            var (ip, port) = Settings.ReadTCPAddress();
             txtServerName.Text = serverName;
             txtDBName.Text = dbName;
             txtUserName.Text = userName;
@@ -186,7 +186,7 @@ namespace LineStatusServer
                 txtPassword.Text,
                 txtOptional.Text
             );
-            Settings.WriteUDPAddress(
+            Settings.WriteTCPAddress(
                 txtIPAddress.Text,
                 txtPort.Text
             );
@@ -206,43 +206,41 @@ namespace LineStatusServer
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            //try
-            //{
-            //    if (btnConnect.Tag.ToString().ToLower() == "disconnected")
-            //    {
-            //        Task.Run(() => TCPServer.ResetConnection(SynchData)).Wait();
-            //        lblCurrentStatus.Text = "Đã kết nối";
-            //        lblCurrentStatus.ForeColor = Color.Green;
-            //        btnConnect.Text = "Ngắt kết nối";
-            //        btnConnect.Image = Properties.Resources.disconnect;
-            //        btnConnect.Padding = new Padding(25, 0, 25, 0);
-            //        btnConnect.ForeColor = Color.Red;
-            //        btnConnect.Tag = "connected";
-            //    }
-            //    else
-            //    {
-            //        Task.Run(() => TCPServer.StopConnection()).Wait();
-            //        lblCurrentStatus.Text = "Đã ngắt kết nối";
-            //        lblCurrentStatus.ForeColor = Color.Red;
-            //        btnConnect.Text = "Kết nối";
-            //        btnConnect.Image = Properties.Resources.connect;
-            //        btnConnect.Padding = new Padding(40, 0, 40, 0);
-            //        btnConnect.ForeColor = Color.Green;
-            //        btnConnect.Tag = "disconnected";
-            //    }
-            //}
-            //catch
-            //{
-            //    lblCurrentStatus.Text = "Đã có lỗi xảy ra";
-            //    lblCurrentStatus.ForeColor = Color.Red;
-            //}
-
-            if (!IsRun)
+            try
             {
-                if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
-                tcpServer = new CSocketServer(Settings.UDPAddress.Port);
-                tcpServer.Start();
-                if (!tcpServer.IsConnected)
+                if (!IsRun)
+                {
+                    if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
+                    tcpServer = new TCPServer(Settings.TCPAddress.Port);
+                    tcpServer.Start();
+                    if (!tcpServer.IsConnected)
+                    {
+                        lblCurrentStatus.Text = "Đã ngắt kết nối";
+                        lblCurrentStatus.ForeColor = Color.Red;
+                        btnConnect.Text = "Kết nối";
+                        btnConnect.Image = Properties.Resources.connect;
+                        btnConnect.Padding = new Padding(40, 0, 40, 0);
+                        btnConnect.ForeColor = Color.Green;
+                        btnConnect.Tag = "disconnected";
+                        IsRun = false;
+                        return;
+                    }
+                    else
+                    {
+                        lblCurrentStatus.Text = "Đã kết nối";
+                        lblCurrentStatus.ForeColor = Color.Green;
+                        btnConnect.Text = "Ngắt kết nối";
+                        btnConnect.Image = Properties.Resources.disconnect;
+                        btnConnect.Padding = new Padding(25, 0, 25, 0);
+                        btnConnect.ForeColor = Color.Red;
+                        btnConnect.Tag = "connected";
+                        IsRun = true;
+                    }
+                    // hàm lấy dữ liệu
+                    tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
+                    tcpServer.OnReceiveDataEvents_Server += GetDataFromServer;
+                }
+                else
                 {
                     lblCurrentStatus.Text = "Đã ngắt kết nối";
                     lblCurrentStatus.ForeColor = Color.Red;
@@ -251,33 +249,14 @@ namespace LineStatusServer
                     btnConnect.Padding = new Padding(40, 0, 40, 0);
                     btnConnect.ForeColor = Color.Green;
                     btnConnect.Tag = "disconnected";
-                    return;
+                    tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
+                    if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
+                    IsRun = false;
                 }
-                else
-                {
-                    lblCurrentStatus.Text = "Đã kết nối";
-                    lblCurrentStatus.ForeColor = Color.Green;
-                    btnConnect.Text = "Ngắt kết nối";
-                    btnConnect.Image = Properties.Resources.disconnect;
-                    btnConnect.Padding = new Padding(25, 0, 25, 0);
-                    btnConnect.ForeColor = Color.Red;
-                    btnConnect.Tag = "connected";
-                }
-                // hàm lấy dữ liệu
-                tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
-                tcpServer.OnReceiveDataEvents_Server += GetDataFromServer;
             }
-            else
+            catch (Exception)
             {
-                lblCurrentStatus.Text = "Đã ngắt kết nối";
-                lblCurrentStatus.ForeColor = Color.Red;
-                btnConnect.Text = "Kết nối";
-                btnConnect.Image = Properties.Resources.connect;
-                btnConnect.Padding = new Padding(40, 0, 40, 0);
-                btnConnect.ForeColor = Color.Green;
-                btnConnect.Tag = "disconnected";
-                tcpServer.OnReceiveDataEvents_Server -= GetDataFromServer;
-                if (tcpServer != null) { tcpServer.Stop(); tcpServer = null; }
+                IsRun = false;
             }
         }
 

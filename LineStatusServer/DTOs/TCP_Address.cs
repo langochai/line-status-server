@@ -1,6 +1,6 @@
 ﻿namespace LineStatusServer.DTOs
 {
-    public class UDPAddress
+    public class TCP_Address
     {
         public string IPAddress { get; set; }
         public int Port { get; set; }
