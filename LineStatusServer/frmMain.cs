@@ -4,10 +4,12 @@ using LineStatusServer.Models;
 using Microsoft.Win32;
 using NB_TestTruyenThong.Uc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,7 +18,7 @@ namespace LineStatusServer
     public partial class frmMain : Form
     {
         public BindingList<LineData> listLineData = new BindingList<LineData>();
-        public string lastLineData = string.Empty;
+        public string lastLineData = null;
 
         private TCPServer tcpServer = null;
         private List<int> LstPrefix = new List<int>();
@@ -47,42 +49,6 @@ namespace LineStatusServer
             grvMain.DataSource = listLineData;
             chkConnectWhenStart.Checked = Properties.Settings.Default.ConnectWhenStart;
             if (chkConnectWhenStart.Checked) btnConnect_Click(null, null);
-        }
-
-        /// <summary>
-        /// Synchronize data in background thread
-        /// </summary>
-        /// <param name="JSONstring">Received data; JSON format</param>
-        private void SynchData(string JSONstring)
-        {
-            try
-            {
-                if (lastLineData == JSONstring)
-                    return;
-                lastLineData = JSONstring;
-
-                LineData lineData = JsonConvert.DeserializeObject<LineData>(JSONstring);
-                lineData.Timestamp = SQLUtilities.GetDate();
-
-                BeginInvoke(new Action(() =>
-                {
-                    listLineData.Insert(0, lineData);
-                    if (listLineData.Count > 100) listLineData.RemoveAt(listLineData.Count - 1);
-                }));
-                var lineDataSQL = new Line_downtime_history
-                {
-                    line_code = lineData.LineCode,
-                    timestamp = lineData.Timestamp,
-                    product_count = lineData.ProductCount,
-                    status = lineData.Status,
-                };
-                SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ErrorLogger.Write(ex);
-            }
         }
 
         #region Minimize to tray
@@ -264,30 +230,74 @@ namespace LineStatusServer
         {
             try
             {
-                if (lastLineData == receive_Data)
-                    return;
-                lastLineData = receive_Data;
 
-                LineData lineData = JsonConvert.DeserializeObject<LineData>(receive_Data);
-                lineData.Timestamp = SQLUtilities.GetDate();
+                using (var sr = new StringReader(receive_Data))
+                using (var reader = new JsonTextReader(sr))
+                {
+                    reader.SupportMultipleContent = true;
+                    var serializer = new JsonSerializer();
 
-                BeginInvoke(new Action(() =>
-                {
-                    listLineData.Insert(0, lineData);
-                    if (listLineData.Count > 100) listLineData.RemoveAt(listLineData.Count - 1);
-                }));
-                var lineDataSQL = new Line_downtime_history
-                {
-                    line_code = lineData.LineCode,
-                    timestamp = lineData.Timestamp,
-                    product_count = lineData.ProductCount,
-                    status = lineData.Status,
-                };
-                SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
+                    while (reader.Read())
+                    {
+                        try
+                        {
+                            // Kiểm tra xem token hiện tại có bắt đầu 1 object JSON không
+                            if (reader.TokenType == JsonToken.StartObject)
+                            {
+                                // Tải toàn bộ object JSON
+                                JObject jObject = JObject.Load(reader);
+
+                                // Chuyển đối tượng JSON thành chuỗi để so sánh (loại bỏ khoảng trắng thừa)
+                                string currentJson = jObject.ToString(Formatting.None).Trim();
+
+                                // Nếu JSON hiện tại trùng với lần trước, bỏ qua xử lý
+                                if (currentJson == lastLineData)
+                                    continue;
+
+                                // Cập nhật lastLineData với dữ liệu hiện tại
+                                lastLineData = currentJson;
+
+                                // Deserialize thành đối tượng của bạn (ví dụ: LineData)
+                                LineData lineData = jObject.ToObject<LineData>(serializer);
+                                if (lineData == null)
+                                    continue;
+
+                                // Cập nhật timestamp hoặc xử lý bổ sung
+                                lineData.Timestamp = SQLUtilities.GetDate();
+
+                                // Cập nhật UI (nếu cần, đảm bảo chạy trên UI thread)
+                                BeginInvoke(new Action(() =>
+                                {
+                                    listLineData.Insert(0, lineData);
+                                    if (listLineData.Count > 100)
+                                        listLineData.RemoveAt(listLineData.Count - 1);
+                                }));
+
+                                // Nếu LineCode rỗng, bỏ qua
+                                if (string.IsNullOrWhiteSpace(lineData.LineCode))
+                                    continue;
+
+                                // Chuyển dữ liệu sang SQL
+                                var lineDataSQL = new Line_downtime_history
+                                {
+                                    line_code = lineData.LineCode,
+                                    timestamp = lineData.Timestamp,
+                                    product_count = lineData.ProductCount,
+                                    status = lineData.Status,
+                                };
+                                SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
+                            }
+                        }
+                        catch (JsonReaderException ex)
+                        {
+                            ErrorLogger.SaveLog("Data JSON", lastLineData);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi: {ex.Message}" + $"\n{receive_Data}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ErrorLogger.Write(ex);
             }
         }
