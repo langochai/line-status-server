@@ -251,10 +251,8 @@ namespace LineStatusServer
                                 string currentJson = jObject.ToString(Formatting.None).Trim();
 
                                 // Nếu JSON hiện tại trùng với lần trước, bỏ qua xử lý
-                                if (currentJson == lastLineData)
+                                if (currentJson == (lastLineData ?? ""))
                                     continue;
-
-                                // Cập nhật lastLineData với dữ liệu hiện tại
                                 lastLineData = currentJson;
 
                                 // Deserialize thành đối tượng của bạn (ví dụ: LineData)
@@ -267,12 +265,13 @@ namespace LineStatusServer
                                 lineData.shift = getShiftBasedOnTime(lineData.Timestamp);
 
                                 // Cập nhật UI (nếu cần, đảm bảo chạy trên UI thread)
-                                BeginInvoke(new Action(() =>
-                                {
-                                    listLineData.Insert(0, lineData);
-                                    if (listLineData.Count > 100)
-                                        listLineData.RemoveAt(listLineData.Count - 1);
-                                }));
+                                if (!this.IsDisposed)
+                                    BeginInvoke(new Action(() =>
+                                    {
+                                        listLineData.Insert(0, lineData);
+                                        if (listLineData.Count > 100)
+                                            listLineData.RemoveAt(listLineData.Count - 1);
+                                    }));
 
                                 // Nếu LineCode rỗng, bỏ qua
                                 if (string.IsNullOrWhiteSpace(lineData.LineCode))
@@ -288,9 +287,7 @@ namespace LineStatusServer
                                     shift = lineData.shift,
                                 };
                                 // update trạng thái của linecode
-                                SQLUtilities.ExcuteProcedure("sp_UpdateLineStatus",
-                                    new string[] { "@LineCode", "@Status" },
-                                    new object[] { lineData.LineCode, lineData.Status });
+                                UpdateSatusDownTime(lineData.LineCode, lineData.Status);
 
                                 SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
                                 ErrorLogger.SaveLog("Data JSON", lastLineData);
@@ -298,6 +295,7 @@ namespace LineStatusServer
                         }
                         catch (JsonReaderException ex)
                         {
+                            ErrorLogger.Write(ex);
                         }
                     }
                 }
@@ -305,6 +303,20 @@ namespace LineStatusServer
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorLogger.Write(ex);
+            }
+        }
+
+        private void UpdateSatusDownTime(string LineCode, int Status)
+        {
+            try
+            {
+                SQLUtilities.ExcuteProcedure("sp_UpdateLineStatus",
+                                    new string[] { "@LineCode", "@Status" },
+                                    new object[] { LineCode, Status });
+            }
+            catch (Exception ex)
+            {
                 ErrorLogger.Write(ex);
             }
         }
