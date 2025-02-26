@@ -34,7 +34,7 @@ namespace LineStatusServer.Common
 
                 string logFilePath = Path.Combine(monthDirectory, now.ToString("dd") + ".txt");
 
-                string logMessage = $"[{now}] {title}: {t_error}\n\n";
+                string logMessage = $"[{now}] {title}: \n{t_error}\n\n";
 
                 File.AppendAllText(logFilePath, logMessage);
             }

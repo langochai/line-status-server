@@ -264,6 +264,7 @@ namespace LineStatusServer
 
                                 // Cập nhật timestamp hoặc xử lý bổ sung
                                 lineData.Timestamp = SQLUtilities.GetDate();
+                                lineData.shift = getShiftBasedOnTime(lineData.Timestamp);
 
                                 // Cập nhật UI (nếu cần, đảm bảo chạy trên UI thread)
                                 BeginInvoke(new Action(() =>
@@ -284,22 +285,47 @@ namespace LineStatusServer
                                     timestamp = lineData.Timestamp,
                                     product_count = lineData.ProductCount,
                                     status = lineData.Status,
+                                    shift = lineData.shift,
                                 };
+                                // update trạng thái của linecode
+                                SQLUtilities.ExcuteProcedure("sp_UpdateLineStatus",
+                                    new string[] { "@LineCode", "@Status" },
+                                    new object[] { lineData.LineCode, lineData.Status });
+
                                 SQLHelper<Line_downtime_history>.Insert(lineDataSQL);
+                                ErrorLogger.SaveLog("Data JSON", lastLineData);
                             }
                         }
                         catch (JsonReaderException ex)
                         {
-                            ErrorLogger.SaveLog("Data JSON", lastLineData);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}" + $"\n{receive_Data}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ErrorLogger.Write(ex);
             }
+        }
+
+        private int getShiftBasedOnTime(DateTime Timestamp)
+        {
+            int shift = 0;
+            try
+            {
+                int hour = Timestamp.Hour;
+                // Kiểm tra nếu từ 08:00 đến 19:59 thì là ca ngày (shift 1)
+                if (hour >= 8 && hour < 20)
+                    shift = 1;
+                else // Từ 20:00 đến 07:59 hôm sau là ca đêm (shift 2)
+                    shift = 2;
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.Write(ex);
+            }
+            return shift;
         }
 
         private void frmMain_Resize(object sender, EventArgs e)

@@ -184,6 +184,7 @@ namespace NB_TestTruyenThong.Uc
                 if (_serverSocket == null) _serverSocket = new Socket(AddressFamily.InterNetwork,
                     (ProtocolType == ProtocolType.Tcp ? SocketType.Stream : SocketType.Dgram), ProtocolType);
 
+                //_serverSocket.Bind(new IPEndPoint(Settings.TCPAddress.Address, Settings.TCPAddress.Port));
                 _serverSocket.Bind(Settings.TCPAddress);
                 _serverSocket.Listen(100);
                 _serverSocket.BeginAccept(AcceptCallback, null);

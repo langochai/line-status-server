@@ -8,5 +8,6 @@ namespace LineStatusServer.Models
         public DateTime timestamp { get; set; }
         public int product_count { get; set; }
         public int status { get; set; }
+        public int shift { get; set; }
     }
 }
