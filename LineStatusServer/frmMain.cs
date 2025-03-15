@@ -262,7 +262,7 @@ namespace LineStatusServer
 
                                 // Cập nhật timestamp hoặc xử lý bổ sung
                                 lineData.Timestamp = SQLUtilities.GetDate();
-                                lineData.shift = getShiftBasedOnTime(lineData.Timestamp);
+                                lineData.shift = getShiftBasedOnLineShift(lineData.LineCode, lineData.Timestamp);
 
                                 // Cập nhật UI (nếu cần, đảm bảo chạy trên UI thread)
                                 if (!this.IsDisposed)
@@ -321,17 +321,51 @@ namespace LineStatusServer
             }
         }
 
-        private int getShiftBasedOnTime(DateTime Timestamp)
+        private int getShiftBasedOnLineShift(string lineCode, DateTime time)
         {
             int shift = 0;
             try
             {
-                int hour = Timestamp.Hour;
-                // Kiểm tra nếu từ 08:00 đến 19:59 thì là ca ngày (shift 1)
-                if (hour >= 8 && hour < 20)
-                    shift = 1;
-                else // Từ 20:00 đến 07:59 hôm sau là ca đêm (shift 2)
-                    shift = 2;
+                if (lineCode.Trim() != "")
+                {
+                    List<LineShiftDTO> list_LineShift = SQLHelper<LineShiftDTO>.SqlToList($"select ls.*, ws.ShiftCode, ws.ShiftName, ws.StartTime, ws.EndTime " +
+                        $"from [LineShift] ls " +
+                        $"inner join WorkShift ws on ws.ID = ls.WorkShiftID " +
+                        $"where ls.LineCode = {lineCode}");
+                    if (list_LineShift.Count == 0)
+                        ErrorLogger.SaveLog("getShiftBasedOnLineShift", "Bạn chưa khai báo ca làm việc theo line");
+
+                    TimeSpan currentTime = time.TimeOfDay;
+
+                    foreach (var shiftItem in list_LineShift)
+                    {
+                        TimeSpan startTime = SQLUtilities.ToTimeSpan(shiftItem.StartTime);
+                        TimeSpan endTime = SQLUtilities.ToTimeSpan(shiftItem.EndTime);
+
+                        if (startTime < endTime)
+                        {
+                            // Ca làm việc trong cùng một ngày (08:00 - 22:00)
+                            if (currentTime >= startTime && currentTime < endTime)
+                            {
+                                shift = shiftItem.ShiftCode;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            // Ca làm việc qua đêm (22:00 - 08:00)
+                            if (currentTime >= startTime || currentTime < endTime)
+                            {
+                                shift = shiftItem.ShiftCode;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    ErrorLogger.SaveLog("getShiftBasedOnLineShift", "---------------line code rỗng");
+                }
             }
             catch (Exception ex)
             {

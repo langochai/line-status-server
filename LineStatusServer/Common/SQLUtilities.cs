@@ -141,6 +141,23 @@ namespace LineStatusServer.Common
             }
         }
 
+        public static TimeSpan ToTimeSpan(string timeString)
+        {
+            try
+            {
+                if (TimeSpan.TryParse(timeString, out TimeSpan timeSpan))
+                {
+                    return timeSpan;
+                }
+            }
+            catch (Exception)
+            {
+                return TimeSpan.Zero;
+            }
+            return TimeSpan.Zero;
+        }
+
+
         /// <summary>
         /// Convert DataTable to List object
         /// </summary>
